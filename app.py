@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 
 app = Flask(__name__)
 
@@ -45,12 +45,14 @@ def add_user():
 
 
 @app.route('/users/<int:id>', methods=['GET'])
-def get_user():
+def get_user(id):
     conn = db_conn()
     c = conn.cursor()
     c.execute('''SELECT * FROM users WHERE id = ?''', (id,))
     row = c.fetchone()
     conn.close()
+    if row is None:
+        abort(404)  # User not found
     return jsonify(row)
 
 
@@ -63,6 +65,8 @@ def update_user(id):
     row = c.fetchone()
     conn.commit()
     conn.close()
+    if row is None:
+        abort(404)  # User not found
     return jsonify(row)
 
 
